@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -64,5 +65,10 @@ class User extends Authenticatable
             Application::class,
             'crew_id'
         );
+    }
+
+    public function crewProfile(): HasOne
+    {
+        return $this->hasOne(CrewProfile::class);
     }
 }
