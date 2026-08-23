@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreJobPostingRequest;
+use App\Http\Resources\JobPostingResource;
 use App\Models\JobPosting;
 use Illuminate\Http\Request;
 
@@ -18,45 +20,15 @@ class JobPostingController extends Controller
         ->get();
 
         return response()->json([
-            'job_postings' => $jobs,
+            'job_postings' => JobPostingResource::collection($jobs),
         ]);
     }
-    
-    public function store(Request $request)
+
+    public function store(StoreJobPostingRequest $request)
     {
         $user = $request->user();
 
-        if ($user->role !== 'recruiter'){
-            return response()->json([
-                'message' => 'Only recruiters can create job post'
-            ], 403);
-        }
-
-        $validated = $request->validate([
-            'event_id' => [
-                'required',
-                'integer',
-                'exist:events,id', //checks the event table, specifically the id column
-            ],
-            'title' => [
-                'required',
-                'string',
-                'max:255'
-            ],
-            'description' => [
-                'nullable',
-                'string'
-            ],
-            'crew_type' => [
-                'required',
-                'in:normal,supervisor',
-            ],
-            'pay_rate' => [
-                'nullable',
-                'numeric',
-                'min:0'
-            ],
-        ]);
+        $validated = $request->validated();
 
         $event = Event::findOrFail($validated['event_id']);
 
@@ -71,7 +43,7 @@ class JobPostingController extends Controller
             'recruiter_id' => $user->id,
             'title' => $validated['title'],
             'description' => $validated['description'],
-            'crew_type' => $validated['crew_type'],
+            'job_type' => $validated['job_type'],
             'number_of_positions' => $validated['number_of_positions'],
             'pay_rate' => $validated['pay_rate'] ?? null,
             'status' => 'open'
@@ -79,10 +51,24 @@ class JobPostingController extends Controller
 
         return response()->json([
             'message' => 'Job Post created successfully',
-            'job_posting' => $jobPosting->load([
-                'event',
-                'recruiter',
-            ]),
+            'job_posting' => new JobPostingResource(
+                $jobPosting->load([
+                    'event',
+                    'recruiter',
+                ]),
+            ),
         ], 201);
+    }
+
+    public function show(JobPosting $jobPosting)
+    {
+        $jobPosting->load([
+            'event',
+            'recruiter'
+        ]);
+
+        return response()->json([
+            'job_posting' => new JobPostingResource($jobPosting),
+        ]);
     }
 }

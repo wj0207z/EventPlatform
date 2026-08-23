@@ -64,6 +64,11 @@ Route::middleware('auth:sanctum')->group(function () {
     );
 
     Route::get(
+        '/job-postings/{jobPosting}',
+        [JobPostingController::class, 'show']
+    );
+
+    Route::get(
         '/events',
         [EventController::class, 'index']
     );

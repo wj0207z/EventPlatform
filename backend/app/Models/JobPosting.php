@@ -13,7 +13,7 @@ class JobPosting extends Model
         'recruiter_id',
         'title',
         'description',
-        'crew_type',
+        'job_type',
         'number_of_positions',
         'pay_rate',
         'status',

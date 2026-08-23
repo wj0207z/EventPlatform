@@ -38,7 +38,7 @@ class ApplicationController extends Controller
     {
         $user = $request->user();
 
-        if (!$user || $user->role !== 'crew'){
+        if ($user->role !== 'crew'){
             return response()->json([
                 'message' => 'Only crew can apply for jobs'
             ], 403);
