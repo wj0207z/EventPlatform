@@ -6,6 +6,8 @@ use App\Http\Requests\StoreJobPostingRequest;
 use App\Http\Resources\JobPostingResource;
 use App\Models\JobPosting;
 use Illuminate\Http\Request;
+use App\Http\Requests\UpdateJobPostingRequest;
+use App\Http\Resources\JobPostingResource;
 
 class JobPostingController extends Controller
 {
@@ -70,5 +72,24 @@ class JobPostingController extends Controller
         return response()->json([
             'job_posting' => new JobPostingResource($jobPosting),
         ]);
+    }
+
+    public function update(
+        UpdateJobPostingRequest $request,
+        JobPosting $jobPosting
+    ){
+        $this ->authorize('update', $jobPosting);
+
+        $jobPosting->update($request->validated());
+
+        return response()->json([
+            'message' => 'Job Post updated successfully',
+            'job_posting' => new JobPostingResource(
+                $jobPosting->load([
+                    'event',
+                    'recruiter',
+                ])
+            ),
+        ], 200);
     }
 }

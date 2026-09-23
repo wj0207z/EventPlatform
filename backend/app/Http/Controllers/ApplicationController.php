@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Application;
 use App\Models\JobPosting;
+use App\Http\Resources\ApplicationResource;
 
 class ApplicationController extends Controller
 {
@@ -26,12 +27,14 @@ class ApplicationController extends Controller
 
         return response()->json([
             'message' => 'Application reviewed successfully',
-            'application' => $application->load([
-                'crew.crewProfile',
-                'jobPosting.event',
-                'reviewer',
-            ]),
-        ]);
+            'application' => new ApplicationResource(
+                    $application->load([
+                        'crew.crewProfile',
+                        'jobPosting.event',
+                        'reviewer',
+                ]),
+            ),
+        ], 200);
     }
 
     public function store(Request $request, JobPosting $jobPosting)
@@ -69,10 +72,13 @@ class ApplicationController extends Controller
 
         return response()->json([
             'message' => 'Application submitted successfully',
-            'application' => $application->load([
-                'jobPosting',
-                'crew',
-            ]),
+            'application' => new ApplicationResource(
+                $application->load([
+                            'crew.crewProfile',
+                            'jobPosting.event',
+                            'reviewer',
+                ]),
+            ),
         ], 201);
     }
 
@@ -81,14 +87,17 @@ class ApplicationController extends Controller
         $applications = Application::query()
             ->where('crew_id', $request->user()->id)
             ->with([
-                'JobPosting.event',
+                'crew.crewProfile',
+                'jobPosting',
                 'reviewer',
             ])
             ->latest()
             ->get();
 
         return response()->json([
-            'applications' => $applications,
+            'applications' => ApplicationResource::collection(
+                $applications
+            ),
         ]);
     }
 
@@ -120,7 +129,9 @@ class ApplicationController extends Controller
             ->get();
 
         return response()->json([
-            'applications' => $applications
+            'applications' => ApplicationResource::collection(
+                $applications
+            ),
         ]);
     }
 }

@@ -68,8 +68,23 @@ Route::middleware('auth:sanctum')->group(function () {
         [JobPostingController::class, 'show']
     );
 
+    Route::patch(
+        '/job-postings/{jobPosting}',
+        [JobPostingController::class, 'update']
+    );
+
+    Route::delete(
+        '/job-postings/{jobPosting}',
+        [JobPostingController::class, 'destroy']
+    );
+
     Route::get(
         '/events',
         [EventController::class, 'index']
+    );
+
+    Route::put(
+        '/me/crew-profile',
+        [CrewProfileController::class, 'update']
     );
 });
