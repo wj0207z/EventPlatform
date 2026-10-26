@@ -8,59 +8,47 @@ use Illuminate\Auth\Access\Response;
 
 class JobPostingPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
+    public function update(User $user, JobPosting $jobPosting
+    ): bool {
+        $jobCompanyId = $jobPosting
+            ->event
+            ?->company_id;
+
+        //security check
+        return $user->role === 'recruiter'
+            && $user->company_id
+            && $jobCompanyId
+            && (int) $user->company_id === (int) $jobCompanyId;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, JobPosting $jobPosting): bool
-    {
-        return false;
-    }
+    public function delete(
+        User $user,
+        JobPosting $jobPosting
+    ): bool {
+        $jobCompanyId = $jobPosting
+        ->event
+        ?->company_id;
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return false;
+        return $user->role === 'recruiter'
+            && $user->company_id
+            && $jobCompanyId
+            && (int) $user->company_id === (int) $jobCompanyId;
     }
+    
+    public function viewApplications(
+        User $user,
+        JobPosting $jobPosting
+    ): bool {
+        if ($user->role !== 'recruiter') {
+            return false;
+        }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, JobPosting $jobPosting): bool
-    {
-        return false;
-    }
+        $jobCompanyId = $jobPosting->event?->company_id;
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, JobPosting $jobPosting): bool
-    {
-        return false;
-    }
+        if (!$user->company_id || !$jobCompanyId) {
+            return false;
+        }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, JobPosting $jobPosting): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, JobPosting $jobPosting): bool
-    {
-        return false;
+        return (int) $user->company_id === (int) $jobCompanyId;
     }
 }

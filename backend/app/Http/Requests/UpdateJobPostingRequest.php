@@ -47,7 +47,7 @@ class UpdateJobPostingRequest extends FormRequest
             'status' => [
                 'sometimes',
                 'required',
-                'in:open,closed, cancelled'
+                'in:open,closed,cancelled'
             ],
         ];
     }

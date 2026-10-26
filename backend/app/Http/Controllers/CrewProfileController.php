@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CrewProfile;
 use Illuminate\Http\Request;
 
 class CrewProfileController extends Controller
 {
-    public function update(Request $requst)
+    public function update(Request $request)
     {
         $user = $request->user();
 

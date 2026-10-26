@@ -14,7 +14,7 @@ class JobPostingResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'job_type' => $this->job_type,
-            'number_of_positions' => $this->status,
+            'number_of_positions' => $this->number_of_positions,
             'pay_rate' => $this->pay_rate,
             'status' => $this->status,
 
@@ -29,6 +29,27 @@ class JobPostingResource extends JsonResource
                 'id' => $this->recruiter->id,
                 'name' => $this->recruiter->name
             ],
+
+            'applications_count' => $this->whenCounted('applications'),
+
+            'pending_applications_count' => $this->whenHas(
+                'pending_applications_count'
+            ),
+
+            'approved_applications_count' => $this->whenHas(
+                'approved_applications_count'
+            ),
+
+            'remaining_positions' => $this->whenHas(
+                'approved_applications_count',
+                function () {
+                    return max(
+                        0,
+                        (int) $this->number_of_positions
+                            - (int) $this->approved_applications_count
+                    );
+                }
+            )
         ];
     }
 }

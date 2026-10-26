@@ -38,6 +38,16 @@ Route::middleware('auth:sanctum')->group(function () {
         [ApplicationController::class, 'recruiterApplications']
     );
 
+    Route::get(
+        '/job-postings/{jobPosting}/applications',
+        [ApplicationController::class, 'jobApplications']
+    );
+
+    Route::patch(
+        '/applications/{application}/withdraw',
+        [ApplicationController::class, 'withdraw']
+    );
+
     Route::put(
         '/me/crew-profile',
         [CrewProfileController::class, 'update']
@@ -76,6 +86,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete(
         '/job-postings/{jobPosting}',
         [JobPostingController::class, 'destroy']
+    );
+
+    Route::get(
+        '/recruiter-job-postings',
+        [JobPostingController::class, 'recruiterJobs']
     );
 
     Route::get(

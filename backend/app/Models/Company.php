@@ -21,4 +21,9 @@ class Company extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class);
+    }
 }

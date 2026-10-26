@@ -22,7 +22,7 @@ class StoreJobPostingRequest extends FormRequest
             ],
 
             'title' => [
-                'requried',
+                'required',
                 'string',
                 'max:255'
             ],
@@ -32,15 +32,16 @@ class StoreJobPostingRequest extends FormRequest
                 'string'
             ],
 
-            'crew_type' => [
+            'job_type' => [
                 'required',
-                'in:normal:supervisor'
+                'string',
+                'max:100'
             ],
 
             'number_of_positions' => [
                 'required',
                 'integer',
-                'in:normal,supervisor'
+                'min:1'
             ],
 
             'pay_rate' => [

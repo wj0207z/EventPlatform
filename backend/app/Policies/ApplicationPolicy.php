@@ -33,4 +33,15 @@ class ApplicationPolicy
         //if true them allow to review
         return (int) $user->company_id === (int) $jobCompanyId;
     }
+
+    public function withdraw(
+        User $user,
+        Application $application
+    ): bool {
+        if ($user->role !== 'crew') {
+            return false;
+        }
+
+        return (int) $user->id === (int) $application->crew_id;
+    }
 }
