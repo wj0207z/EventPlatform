@@ -1148,4 +1148,39 @@ class ApplicationReviewTest extends TestCase
             ->assertJsonPath('pagination.per_page', 10)
             ->assertJsonPath('pagination.total', 1);
     }
+
+    public function test_job_list_combines_search_type_and_open_status(): void
+    {
+        $cases = [
+            ['title' => 'Capacity Crew', 'job_type' => 'registration', 'status' => 'open'],
+            ['title' => 'Capacity Supervisor', 'job_type' => 'supervisor', 'status' => 'open'],
+            ['title' => 'Welcome Crew', 'job_type' => 'registration', 'status' => 'open'],
+            ['title' => 'Capacity Closed', 'job_type' => 'registration', 'status' => 'closed'],
+        ];
+
+        $jobs = [];
+
+        foreach ($cases as $attributes) {
+            $job = $this->createJobForRecruiter()['job'];
+            $job->update($attributes);
+            $jobs[] = $job;
+        }
+
+        $crew = User::factory()->create([
+            'role' => 'crew',
+            'company_id' => null,
+        ]);
+
+        Sanctum::actingAs($crew);
+
+        $this->getJson(
+            '/api/job-postings?search=Capacity&job_type=registration'
+        )
+            ->assertOk()
+            ->assertJsonCount(1, 'job_postings')
+            ->assertJsonPath('job_postings.0.id', $jobs[0]->id)
+            ->assertJsonPath('job_postings.0.job_type', 'registration')
+            ->assertJsonPath('job_postings.0.status', 'open')
+            ->assertJsonPath('pagination.total', 1);
+    }
 }

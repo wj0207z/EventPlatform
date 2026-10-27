@@ -19,12 +19,16 @@ class JobPostingController extends Controller
             'search' => ['nullable','string','max:255'],
             'per_page' => ['sometimes','required','integer','min:1','max:50'],
             'page' => ['sometimes','required','integer','min:1'],
+            'job_type' => ['sometimes', 'required', 'string', 'max:100'],
         ]);
 
         $search = trim($validated['search'] ?? '');
 
         $jobs = JobPosting::query()
             ->where('status', 'open')
+            ->when(isset($validated['job_type']), function ($query) use ($validated) {
+                $query->where('job_type', $validated['job_type']);
+            })
             ->when($search !== '', function ($query) use ($search) {
                 $query->where('title', 'like', '%' . $search . '%');
             })

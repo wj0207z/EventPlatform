@@ -6,6 +6,7 @@ use App\Http\Controllers\CrewProfileController;
 use App\Http\Controllers\JobPostingController;
 use App\Http\Controllers\EventController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ClientController;
 
 Route::post(
     '/login',
@@ -98,8 +99,29 @@ Route::middleware('auth:sanctum')->group(function () {
         [EventController::class, 'index']
     );
 
+    Route::post(
+        '/events',
+        [EventController::class, 'store']
+    );
+
+    Route::get(
+        '/events/{event}',
+        [EventController::class, 'show']
+    );
+
+    Route::patch(
+        '/events/{event}',
+        [EventController::class, 'update']
+    );
+
     Route::put(
         '/me/crew-profile',
         [CrewProfileController::class, 'update']
     );
+
+    Route::get(
+        '/clients',
+        [ClientController::class, 'index']
+    );
+
 });
