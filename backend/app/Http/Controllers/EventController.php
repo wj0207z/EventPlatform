@@ -6,6 +6,7 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
+use App\Http\Resources\EventResource;
 
 class EventController extends Controller
 {
@@ -13,19 +14,38 @@ class EventController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role !== 'recruiter'){
+        if ($user->role !== 'recruiter' || !$user->company_id) {
             return response()->json([
                 'message' => 'Only recruiters can view company event'
             ], 403);
         }
 
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'per_page' => ['sometimes', 'required', 'integer', 'min:1', 'max:50'],
+            'page' => ['sometimes', 'required', 'integer', 'min:1'],
+        ]);
+
+        $search = trim($validated['search'] ?? '');
+
         $events = Event::with('client') //load each event and its related client
             ->where('company_id', $user->company_id)
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where('name', 'like', "%" . $search . "%");
+            })
+            ->with(['client'])
             ->orderBy('event_date')
-            ->get();
+            ->orderBy('id')
+            ->paginate($validated['per_page'] ?? 10);
 
         return response()->json([
-            'events' => $events,
+            'events' => EventResource::collection($events->items()),
+            'pagination' => [
+                'current_page' => $events->currentPage(),
+                'last_page' => $events->lastPage(),
+                'per_page' => $events->perPage(),
+                'total' => $events->total(),
+            ],
         ]);
     }
 
@@ -45,16 +65,7 @@ class EventController extends Controller
 
         return response()->json([
             'message' => 'Event created successfully.',
-            'event' => [
-                'id' => $event->id,
-                'client_id' => $event->client_id,
-                'company_id' => $event->company_id,
-                'name' => $event->name,
-                'description' => $event->description,
-                'event_date' => $event->event_date->format('Y-m-d'),
-                'location' => $event->location,
-                'status' => $event->status,
-            ],
+            'event' => new EventResource($event->load('client')),
         ], 201);
     }
 
@@ -65,18 +76,7 @@ class EventController extends Controller
         $event->load('client');
 
         return response()->json([
-            'event' => [
-                'id' => $event->id,
-                'name' => $event->name,
-                'description' => $event->description,
-                'event_date' => $event->event_date->format('Y-m-d'),
-                'location' => $event->location,
-                'status' => $event->status,
-                'client' => [
-                    'id' => $event->client->id,
-                    'name' => $event->client->name,
-                ],
-            ],
+            'event' => new EventResource($event),
         ]);
     }
 
@@ -93,14 +93,7 @@ class EventController extends Controller
 
         return response()->json([
             'message' => 'Event updated successfully.',
-            'event' => [
-                'id' => $event->id,
-                'name' => $event->name,
-                'description' => $event->description,
-                'event_date' => $event->event_date->format('Y-m-d'),
-                'location' => $event->location,
-                'status' => $event->status,
-            ],
+            'event' => new EventResource($event->load('client')),
         ], 200);
     }
 }

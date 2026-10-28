@@ -307,4 +307,39 @@ class EventCreationTest extends TestCase
             'location' => 'Original Hall',
         ]);
     }
+
+    public function test_event_search_only_returns_matching_company_events(): void
+    {
+        $company = Company::factory()->create();
+        $otherCompany = Company::factory()->create();
+
+        $recruiter = User::factory()->create([
+            'role' => 'recruiter',
+            'company_id' => $company->id,
+        ]);
+
+        $matchingEvent = Event::factory()->create([
+            'company_id' => $company->id,
+            'name' => 'Annual Celebration',
+        ]);
+
+        Event::factory()->create([
+            'company_id' => $company->id,
+            'name' => 'Product Launch',
+        ]);
+
+        Event::factory()->create([
+            'company_id' => $otherCompany->id,
+            'name' => 'Annual Celebration',
+        ]);
+
+        Sanctum::actingAs($recruiter);
+
+        $this->getJson('/api/events?search=Annual')
+            ->assertOk()
+            ->assertJsonCount(1, 'events')
+            ->assertJsonPath('events.0.id', $matchingEvent->id)
+            ->assertJsonPath('events.0.company_id', $company->id)
+            ->assertJsonPath('pagination.total', 1);
+    }
 }

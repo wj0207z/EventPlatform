@@ -124,4 +124,9 @@ Route::middleware('auth:sanctum')->group(function () {
         [ClientController::class, 'index']
     );
 
+    Route::post(
+        '/clients',
+        [ClientController::class, 'store']
+    );
+
 });
